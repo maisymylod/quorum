@@ -10,7 +10,7 @@ from quorum.core.population import Population, _largest_remainder
 
 def test_requires_weight_column():
     with pytest.raises(ValueError, match="weight"):
-        Population(pd.DataFrame({"age_band": ["18-34"]}))
+        Population(pd.DataFrame({"age_band": ["18-24"]}))
 
 
 @pytest.mark.parametrize(
@@ -96,8 +96,8 @@ def test_with_weights_validates_shape(small_population):
 
 def test_subset_and_with_column(small_population):
     tagged = small_population.with_column("flag", np.arange(len(small_population)))
-    young = tagged.subset(tagged.frame["age_band"].to_numpy() == "18-34")
-    assert set(young.frame["age_band"]) == {"18-34"}
+    young = tagged.subset(tagged.frame["age_band"].to_numpy() == "18-24")
+    assert set(young.frame["age_band"]) == {"18-24"}
     assert "flag" in young.frame.columns
 
 
