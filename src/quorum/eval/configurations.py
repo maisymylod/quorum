@@ -153,9 +153,8 @@ def build_spec(
     payload["scenario"] = {
         "question_id": group_id,
         "options": options,
-        "arms": [
-            {"id": arm.id, "label": arm.arm_label or arm.id, "prompt": arm.text}
-            for arm in arms
-        ],
+        # The label is the short handle; the prompt carries the verbatim wording.
+        # Using the wording for both would print the question twice in every artifact.
+        "arms": [{"id": arm.id, "label": arm.id, "prompt": arm.text} for arm in arms],
     }
     return SimulationSpec.from_dict(payload)
