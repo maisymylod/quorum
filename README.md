@@ -24,7 +24,7 @@ Under construction, built in milestones. What is in `main` today:
 - [x] Hybrid LLM and classical response prediction, with cost accounting and a budget guard
 - [x] Poststratification, partial pooling, and two independent routes to an interval
 - [x] Evaluation harness: backtest, baselines, ablation grid, calibration, generated `EVAL.md`
-- [ ] Publication layer: decision-ready report
+- [x] Publication layer: a self-contained decision-ready report
 
 Numbers will appear in `EVAL.md` only once they come from actually running the code.
 
