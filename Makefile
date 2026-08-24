@@ -1,0 +1,32 @@
+.DEFAULT_GOAL := help
+PY ?= python3
+VENV := .venv
+BIN := $(VENV)/bin
+SPEC ?= specs/natfare.yaml
+
+$(VENV):
+	$(PY) -m venv $(VENV)
+
+.PHONY: install
+install: $(VENV) ## create the venv and install the package with dev extras
+	$(BIN)/pip install --quiet --upgrade pip
+	$(BIN)/pip install --quiet -e ".[dev]"
+	@echo "installed. try: make test"
+
+.PHONY: test
+test: ## run the test suite and the quality gates
+	$(BIN)/pytest --cov=quorum --cov-report=term-missing --cov-fail-under=85
+
+.PHONY: fast-test
+fast-test: ## run the test suite without coverage
+	$(BIN)/pytest
+
+.PHONY: clean
+clean: ## remove build and test artifacts
+	rm -rf build dist .pytest_cache .coverage htmlcov src/*.egg-info
+	find . -name __pycache__ -type d -prune -exec rm -rf {} +
+
+.PHONY: help
+help: ## show this help
+	@grep -hE '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | \
+	  awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'

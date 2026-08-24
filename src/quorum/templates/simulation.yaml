@@ -1,0 +1,61 @@
+# A quorum simulation spec. Everything the engine needs to reproduce this run.
+# Edit, then: quorum validate <this file>
+name: "{name}"
+seed: 20260824
+
+population:
+  source: marginals
+  targets: data/vendor/acs_marginals.json
+  microdata: data/vendor/acs_microdata.csv
+  size: 20000
+  attributes: [age_band, sex, education, race, income_band]
+  traits: [openness, engagement]
+
+world:
+  network:
+    enabled: false
+    mean_degree: 8
+    homophily: 0.7
+    dimensions: [age_band, education]
+  dynamics:
+    enabled: false
+    rounds: 3
+    confidence: 0.25
+    susceptibility: 0.2
+
+scenario:
+  question_id: "{name}"
+  prompt: >-
+    Replace this with the question the population is being asked.
+  options: ["Agree", "Disagree", "Neither"]
+  arms: []
+  context: ""
+
+predictor:
+  kind: hybrid          # hybrid | llm | classical | prior | uniform
+  archetypes: 300
+  stratify_by: [age_band, education]
+  propagator: multinomial_logit
+  trait_noise: 0.05
+  provider:
+    name: stub          # stub runs offline and free; anthropic makes real calls
+    model: claude-sonnet-5
+    max_concurrency: 8
+    max_tokens: 512
+    temperature: 0.0
+    cache_dir: data/cache
+
+estimator:
+  poststratify: true
+  dimensions: [age_band, education]
+  mrp: true
+  draws: 2000
+  level: 0.90
+
+budget:
+  max_usd: 5.0
+  max_calls: 5000
+
+output:
+  dir: artifacts
+  formats: [json, markdown, html]
