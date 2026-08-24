@@ -74,8 +74,6 @@ def _cmd_run(args: argparse.Namespace) -> int:
     spec = SimulationSpec.from_yaml(args.spec)
     result = Simulation(spec, root=args.root).run()
     destination = Path(args.root) / spec.output.dir / spec.name.replace(":", "_")
-    path = result.record.write(destination)
-
     print(f"{spec.name}  ({result.record.reproducibility_key()})")
     print(f"  population   {len(result.population):,} agents, "
           f"marginal fidelity {result.fidelity.max_deviation:.1e}")
@@ -92,7 +90,13 @@ def _cmd_run(args: argparse.Namespace) -> int:
           f"{result.record.llm_calls:,} calls in {result.record.wall_seconds:.1f}s")
     for note in result.record.notes:
         print(f"  note         {note}")
-    print(f"  wrote        {path}")
+    from quorum.publish.report import publish
+
+    written = publish(result, destination)
+    for kind, where in written.items():
+        print(f"  wrote        {where}  ({kind})")
+    if "json" not in written:
+        print(f"  wrote        {path}")
     return 0
 
 

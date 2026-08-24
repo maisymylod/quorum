@@ -48,11 +48,10 @@ scenario:
   - too much
   arms:
   - id: natfare
-    label: Are we spending too much, too little, or about the right amount on Welfare?
+    label: natfare
     prompt: Are we spending too much, too little, or about the right amount on Welfare?
   - id: natfarey
-    label: Are we spending too much, too little, or about the right amount on Assistance
-      to the poor?
+    label: natfarey
     prompt: Are we spending too much, too little, or about the right amount on Assistance
       to the poor?
   context: ''
