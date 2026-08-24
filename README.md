@@ -22,7 +22,7 @@ Under construction, built in milestones. What is in `main` today:
 - [x] World model: homophilous social graph and bounded-confidence peer influence
 - [x] Classical propagation and the baselines a real engine has to beat
 - [x] Hybrid LLM and classical response prediction, with cost accounting and a budget guard
-- [ ] Poststratification, hierarchical Bayesian intervals, Monte Carlo
+- [x] Poststratification, partial pooling, and two independent routes to an interval
 - [ ] Evaluation harness: backtest, baselines, ablation grid, calibration
 - [ ] Publication layer: decision-ready report
 
