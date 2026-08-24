@@ -119,11 +119,16 @@ class ProviderSpec(_Base):
     """Which model backend the LLM half of the predictor talks to."""
 
     name: Literal["stub", "anthropic"] = "stub"
-    model: str = "claude-sonnet-5"
+    model: str = "claude-opus-5"
     max_concurrency: int = Field(default=8, ge=1)
     max_tokens: int = Field(default=512, ge=16)
-    temperature: float = Field(default=0.0, ge=0.0, le=1.0)
+    effort: Literal["low", "medium", "high", "xhigh", "max"] = Field(
+        default="low",
+        description="Reasoning depth. Answering one survey question as one persona "
+        "does not need much, and this is multiplied by the archetype count.",
+    )
     cache_dir: str = "data/cache"
+    batch_size: int = Field(default=32, ge=1)
 
 
 class PredictorSpec(_Base):
