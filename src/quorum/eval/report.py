@@ -1,0 +1,184 @@
+"""Writing the accuracy report.
+
+The report is generated, never edited, and it is generated from an actual run. It also
+says which provider produced the answers, at the top, in the first thing a reader sees.
+A table of accuracy figures produced by the offline stub would look exactly like a
+table produced by a model, and the difference between those two things is the entire
+value of the document.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+from quorum.eval.harness import BacktestResult
+
+STUB_WARNING = """\
+> **These numbers came from the offline stub, not from a model.** The stub answers by
+> hashing the prompt into a distribution; it knows nothing about the world and cannot
+> predict anything. What the table below demonstrates is that the pipeline runs end to
+> end and that the scoring is wired up, nothing more. Re-run with a real provider to
+> get numbers about prediction.
+"""
+
+#: Columns worth showing, in the order a reader wants them, and which way is better.
+COLUMNS: tuple[tuple[str, str, bool], ...] = (
+    ("mae", "MAE", True),
+    ("total_variation", "TV", True),
+    ("earth_movers", "EMD", True),
+    ("brier", "Brier", True),
+    ("log_score", "Log score", True),
+    ("ece", "ECE", True),
+    ("within_truth_interval", "In truth CI", False),
+    ("interval_coverage", "Coverage", False),
+    ("gap_mae", "Gap MAE", True),
+    ("gap_sign_accuracy", "Gap sign", False),
+    ("gap_correlation", "Gap corr", False),
+)
+
+
+def _format(value: float) -> str:
+    if value != value:  # NaN
+        return "-"
+    if abs(value) >= 100:
+        return f"{value:,.0f}"
+    return f"{value:.4f}"
+
+
+def leaderboard(results: dict[str, BacktestResult], baseline: str = "prior") -> str:
+    """A table of every configuration, best first by mean absolute error."""
+    if not results:
+        raise ValueError("no results to report")
+    summaries = {name: result.summary() for name, result in results.items()}
+    reference = summaries.get(baseline)
+
+    present = [c for c in COLUMNS if any(c[0] in s for s in summaries.values())]
+    header = ["engine", *(label for _, label, _ in present), "skill vs prior", "cost", "calls"]
+    rows = [
+        "| " + " | ".join(header) + " |",
+        "|" + "|".join(["---"] * len(header)) + "|",
+    ]
+    for name in sorted(summaries, key=lambda n: summaries[n]["mae"]):
+        summary = summaries[name]
+        cells = [f"`{name}`"]
+        cells.extend(_format(summary[key]) if key in summary else "-" for key, _, _ in present)
+        if reference and reference.get("mae"):
+            skill = 1.0 - summary["mae"] / reference["mae"]
+            cells.append(f"{skill:+.1%}")
+        else:
+            cells.append("-")
+        cells.append(f"${summary['cost_usd']:.4f}")
+        cells.append(f"{int(summary['llm_calls']):,}")
+        rows.append("| " + " | ".join(cells) + " |")
+    return "\n".join(rows)
+
+
+def experiment_table(result: BacktestResult) -> str:
+    """Per wording experiment: what the split really did, and what was predicted."""
+    if not result.experiments:
+        return "_No wording experiments were scored._"
+    rows = [
+        "| experiment | arms | true gap | predicted | error | sign |",
+        "|---|---|---|---|---|---|",
+    ]
+    for score in sorted(result.experiments, key=lambda e: -abs(e.true_gap)):
+        sign = "-" if not score.is_scoreable else ("yes" if score.sign_matches else "**no**")
+        rows.append(
+            f"| {score.experiment_id} | {score.arms[0]} vs {score.arms[1]} | "
+            f"{score.true_gap:+.3f} | {score.predicted_gap:+.3f} | "
+            f"{score.error:.3f} | {sign} |"
+        )
+    return "\n".join(rows)
+
+
+def worst_questions(result: BacktestResult, limit: int = 8) -> str:
+    rows = ["| question | MAE | predicted | truth |", "|---|---|---|---|"]
+    for score in sorted(result.questions, key=lambda q: -q.mae)[:limit]:
+        predicted = ", ".join(f"{v:.2f}" for v in score.prediction)
+        truth = ", ".join(f"{v:.2f}" for v in score.truth)
+        rows.append(f"| `{score.question_id}` | {score.mae:.4f} | {predicted} | {truth} |")
+    return "\n".join(rows)
+
+
+def render(
+    results: dict[str, BacktestResult],
+    bank_year: int,
+    provider: str,
+    model: str,
+    population_size: int,
+    archetypes: int,
+    baseline: str = "prior",
+) -> str:
+    """Render the whole report."""
+    if not results:
+        raise ValueError("no results to report")
+    best_name = min(results, key=lambda n: results[n].summary()["mae"])
+    best = results[best_name]
+    stamped = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    total_cost = sum(r.cost_usd for r in results.values())
+    total_calls = sum(r.llm_calls for r in results.values())
+    total_seconds = sum(r.wall_seconds for r in results.values())
+
+    parts = [
+        "# Accuracy",
+        "",
+        "Generated by `make eval`. Every number here comes from running the code "
+        "against published survey results the engine never sees.",
+        "",
+        f"- **Provider** `{provider}`, model `{model}`",
+        f"- **Ground truth** national survey, {bank_year}, "
+        f"{len(best.questions)} scored items and {len(best.experiments)} wording experiments",
+        f"- **Population** {population_size:,} synthetic agents, {archetypes} archetypes measured",
+        f"- **Run** {stamped}, {total_calls:,} model calls, ${total_cost:.4f}, "
+        f"{total_seconds:.1f}s",
+        "",
+    ]
+    if provider == "stub":
+        parts += [STUB_WARNING, ""]
+
+    parts += [
+        "## Leaderboard",
+        "",
+        "Lower is better for MAE, TV, EMD, Brier, log score, ECE and gap MAE; higher "
+        "is better for the rest. `skill vs prior` is the share of the prior baseline's "
+        "error removed, so a negative number means the configuration did worse than "
+        "predicting the average answer to questions of that shape.",
+        "",
+        leaderboard(results, baseline=baseline),
+        "",
+        "## Wording experiments",
+        "",
+        "Each of these asks one spending question two ways, each way to a random half "
+        "of respondents. The halves describe the same population, so the gap between "
+        "them is caused by the wording alone. Predicting both toplines well while "
+        "predicting no gap would score respectably on average error and would mean the "
+        "engine is not reading the question.",
+        "",
+        f"Best configuration by MAE: `{best_name}`.",
+        "",
+        experiment_table(best),
+        "",
+        "## Where it was furthest off",
+        "",
+        worst_questions(best),
+        "",
+        "## How to read this",
+        "",
+        "- **MAE** is per option, in share units. 0.05 means five points off on the "
+        "average response option.",
+        "- **In truth CI** is the share of options where the prediction lands inside "
+        "the survey's own 95 percent sampling interval. The ground truth is an "
+        "estimate from about 1,600 respondents, not a constant, so this is the fair "
+        "version of \"was it right\".",
+        "- **Coverage** is how often the truth fell inside the predicted interval. "
+        "Compare it against the nominal level: a 90 percent interval that covers 55 "
+        "percent of the time is not a 90 percent interval.",
+        "- **Gap sign** counts only experiments whose true gap is larger than the "
+        "noise of two survey halves. A gap of one point has no sign worth predicting.",
+        "",
+    ]
+    if best.notes:
+        parts += ["## Notes from the run", ""]
+        parts += [f"- {note}" for note in best.notes]
+        parts += [""]
+    return "\n".join(parts)

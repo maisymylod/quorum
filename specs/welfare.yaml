@@ -1,0 +1,91 @@
+# The welfare wording experiment, as a runnable simulation.
+#
+# The same spending question asked two ways, each way to a random half of a real
+# survey's respondents. Because the halves were assigned at random they describe the
+# same population, so the gap between them is caused by the wording and nothing else.
+# In 2024, 33.4% said we spend too little on "welfare" and 70.5% said we spend too
+# little on "assistance to the poor".
+#
+#   quorum run specs/welfare.yaml
+#
+# Switch provider.name to `anthropic` to make real calls. The stub is offline and
+# free and cannot predict anything; see README.
+name: welfare
+seed: 20260824
+population:
+  source: marginals
+  targets: data/vendor/acs_marginals.json
+  microdata: data/vendor/acs_microdata.csv.gz
+  size: 20000
+  attributes:
+  - age_band
+  - sex
+  - education
+  - race
+  - marital
+  traits:
+  - openness
+  - engagement
+world:
+  network:
+    enabled: false
+    mean_degree: 8
+    homophily: 0.7
+    dimensions:
+    - age_band
+    - education
+  dynamics:
+    enabled: false
+    rounds: 3
+    confidence: 0.25
+    susceptibility: 0.2
+scenario:
+  question_id: welfare
+  prompt: ''
+  options:
+  - too little
+  - about right
+  - too much
+  arms:
+  - id: natfare
+    label: Are we spending too much, too little, or about the right amount on Welfare?
+    prompt: Are we spending too much, too little, or about the right amount on Welfare?
+  - id: natfarey
+    label: Are we spending too much, too little, or about the right amount on Assistance
+      to the poor?
+    prompt: Are we spending too much, too little, or about the right amount on Assistance
+      to the poor?
+  context: ''
+predictor:
+  kind: hybrid
+  archetypes: 300
+  stratify_by:
+  - age_band
+  - education
+  propagator: multinomial_logit
+  provider:
+    name: stub
+    model: stub
+    max_concurrency: 8
+    max_tokens: 512
+    effort: low
+    cache_dir: data/cache
+    batch_size: 32
+  trait_noise: 0.05
+estimator:
+  poststratify: true
+  dimensions:
+  - age_band
+  - education
+  mrp: true
+  draws: 1000
+  level: 0.9
+budget:
+  max_usd: 25.0
+  max_calls: 60000
+output:
+  dir: artifacts
+  formats:
+  - json
+  - markdown
+  - html

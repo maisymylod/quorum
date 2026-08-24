@@ -2,7 +2,8 @@
 PY ?= python3
 VENV := .venv
 BIN := $(VENV)/bin
-SPEC ?= specs/natfare.yaml
+SPEC ?= specs/welfare.yaml
+EVAL_ARGS ?=
 
 $(VENV):
 	$(PY) -m venv $(VENV)
@@ -16,6 +17,15 @@ install: $(VENV) ## create the venv and install the package with dev extras
 .PHONY: data
 data: ## re-download the public sources and rebuild data/vendor (needs ~650 MB and poppler)
 	$(BIN)/python scripts/fetch_data.py --all
+
+.PHONY: demo
+demo: install ## run the welfare wording experiment end to end, from a clean clone
+	$(BIN)/quorum validate $(SPEC)
+	$(BIN)/quorum run $(SPEC)
+
+.PHONY: eval
+eval: ## run the ablation grid over the question bank and regenerate EVAL.md
+	$(BIN)/quorum eval $(EVAL_ARGS)
 
 .PHONY: test
 test: ## run the test suite and the quality gates

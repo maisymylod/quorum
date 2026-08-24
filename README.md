@@ -23,7 +23,7 @@ Under construction, built in milestones. What is in `main` today:
 - [x] Classical propagation and the baselines a real engine has to beat
 - [x] Hybrid LLM and classical response prediction, with cost accounting and a budget guard
 - [x] Poststratification, partial pooling, and two independent routes to an interval
-- [ ] Evaluation harness: backtest, baselines, ablation grid, calibration
+- [x] Evaluation harness: backtest, baselines, ablation grid, calibration, generated `EVAL.md`
 - [ ] Publication layer: decision-ready report
 
 Numbers will appear in `EVAL.md` only once they come from actually running the code.
@@ -83,10 +83,13 @@ them.
 
 ```bash
 make install
+make demo          # synthesize, ask, estimate, report, from a clean clone
 make test          # tests plus the quality gate
-.venv/bin/quorum new turnout --path specs/turnout.yaml
-.venv/bin/quorum validate specs/turnout.yaml
+make eval          # rerun the ablation grid and regenerate EVAL.md
 ```
+
+`make demo` runs the welfare wording experiment: the same spending question asked two
+ways, against one synthetic population, scored against what a real survey found.
 
 ## Capabilities demonstrated
 
