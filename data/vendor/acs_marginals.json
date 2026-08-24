@@ -1,0 +1,54 @@
+{
+  "source": {
+    "name": "American Community Survey Public Use Microdata Sample",
+    "publisher": "US Census Bureau",
+    "year": 2024,
+    "product": "1-Year PUMS, person records",
+    "url": "https://www2.census.gov/programs-surveys/acs/data/pums/2024/1-Year/csv_pus.zip",
+    "license": "Public domain (US federal government work)",
+    "variables": [
+      "AGEP",
+      "SEX",
+      "SCHL",
+      "RAC1P",
+      "MAR",
+      "PWGTP"
+    ]
+  },
+  "universe": "US adults aged 18 and over, ACS 2024 1-Year PUMS, person weights (PWGTP)",
+  "records": 2790132,
+  "population_total": 267241508.0,
+  "marginals": {
+    "age_band": {
+      "18-24": 0.11715019958651034,
+      "25-34": 0.17256776967446238,
+      "35-44": 0.17253210904647343,
+      "45-54": 0.15271947574850536,
+      "55-64": 0.15585333398133647,
+      "65+": 0.229177111962712
+    },
+    "sex": {
+      "male": 0.4899496263881283,
+      "female": 0.5100503736118717
+    },
+    "education": {
+      "less_than_hs": 0.10256072196688847,
+      "high_school": 0.2704833936201258,
+      "some_college": 0.28490195841882465,
+      "bachelors": 0.21040632280820687,
+      "graduate": 0.13164760318595417
+    },
+    "race": {
+      "white": 0.6206063318576993,
+      "black": 0.11807915707465623,
+      "other": 0.2613145110676445
+    },
+    "marital": {
+      "married": 0.5024495034656068,
+      "widowed": 0.05731192775637234,
+      "divorced": 0.10815245062903926,
+      "separated": 0.01655784325240374,
+      "never_married": 0.3155282748965778
+    }
+  }
+}

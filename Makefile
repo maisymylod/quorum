@@ -13,6 +13,10 @@ install: $(VENV) ## create the venv and install the package with dev extras
 	$(BIN)/pip install --quiet -e ".[dev]"
 	@echo "installed. try: make test"
 
+.PHONY: data
+data: ## re-download the public sources and rebuild data/vendor (needs ~650 MB and poppler)
+	$(BIN)/python scripts/fetch_data.py --all
+
 .PHONY: test
 test: ## run the test suite and the quality gates
 	$(BIN)/pytest --cov=quorum --cov-report=term-missing --cov-fail-under=85

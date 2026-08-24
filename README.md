@@ -17,6 +17,7 @@ Under construction, built in milestones. What is in `main` today:
 
 - [x] Core objects and contracts: `Agent`, `Population`, `SimulationSpec`, `RunRecord`
 - [x] `quorum new` / `quorum validate` and a declarative spec format
+- [x] Real ground truth vendored: national census marginals and a scored survey question bank
 - [ ] Population synthesis (raking to real ACS marginals) and fidelity gates
 - [ ] World model: social graph and bounded-confidence peer influence
 - [ ] Hybrid LLM + classical response prediction, with cost accounting
@@ -25,6 +26,31 @@ Under construction, built in milestones. What is in `main` today:
 - [ ] Publication layer: decision-ready report
 
 Numbers will appear in `EVAL.md` only once they come from actually running the code.
+
+## Ground truth
+
+Accuracy is measured against two independent public sources, which is the only reason
+the accuracy claim means anything.
+
+| | Source | Role |
+|---|---|---|
+| Population | American Community Survey 2024 1-Year PUMS, 2.8M adult records representing 267M adults | What a synthesized population is raked to |
+| Answers | General Social Survey 2024, 3,309 respondents, 41 scored items | What a prediction is scored against |
+
+The population is built from census data; the answers it is scored against come from a
+survey the synthesis never sees. They meet only at a shared attribute taxonomy.
+
+Eleven of those items are **randomized wording experiments**: the same spending question
+asked two ways, each to a random half of respondents. Because the halves are randomly
+assigned, they describe the same population, so any difference between them is caused by
+the wording alone. That is an answer key an ordinary topline cannot be.
+
+The best known of them is welfare. In 2024, **33.4%** said we spend too little on
+*"welfare"*; **70.5%** said we spend too little on *"assistance to the poor"*. Same
+population, same survey, same year, 37 points apart. A simulator that returns the same
+answer for both has not modelled the question at all.
+
+Details and caveats: [`data/vendor/PROVENANCE.md`](data/vendor/PROVENANCE.md).
 
 ## The shape of a simulation
 
