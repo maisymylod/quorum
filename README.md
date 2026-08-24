@@ -18,7 +18,7 @@ Under construction, built in milestones. What is in `main` today:
 - [x] Core objects and contracts: `Agent`, `Population`, `SimulationSpec`, `RunRecord`
 - [x] `quorum new` / `quorum validate` and a declarative spec format
 - [x] Real ground truth vendored: national census marginals and a scored survey question bank
-- [ ] Population synthesis (raking to real ACS marginals) and fidelity gates
+- [x] Population synthesis: microdata resampling and raking, with fidelity enforced as a gate
 - [ ] World model: social graph and bounded-confidence peer influence
 - [ ] Hybrid LLM + classical response prediction, with cost accounting
 - [ ] Poststratification, hierarchical Bayesian intervals, Monte Carlo
