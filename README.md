@@ -21,7 +21,7 @@ Under construction, built in milestones. What is in `main` today:
 - [x] Population synthesis: microdata resampling and raking, with fidelity enforced as a gate
 - [x] World model: homophilous social graph and bounded-confidence peer influence
 - [x] Classical propagation and the baselines a real engine has to beat
-- [ ] Hybrid LLM + classical response prediction, with cost accounting
+- [x] Hybrid LLM and classical response prediction, with cost accounting and a budget guard
 - [ ] Poststratification, hierarchical Bayesian intervals, Monte Carlo
 - [ ] Evaluation harness: backtest, baselines, ablation grid, calibration
 - [ ] Publication layer: decision-ready report
