@@ -133,6 +133,12 @@ def _cmd_eval(args: argparse.Namespace) -> int:
             f"${summary['cost_usd']:.4f}  {int(summary['llm_calls']):,} calls"
         )
 
+    summaries = {name: r.summary() for name, r in results.items()}
+    baseline = results.get("prior")
+    if baseline is not None:
+        for name, result in results.items():
+            summaries[name] = result.with_skill_against(baseline)
+
     text = report.render(
         results,
         bank_year=bank.year,
@@ -145,9 +151,21 @@ def _cmd_eval(args: argparse.Namespace) -> int:
     artifacts = root / "artifacts"
     artifacts.mkdir(parents=True, exist_ok=True)
     (artifacts / "eval.json").write_text(
-        json.dumps({name: r.summary() for name, r in results.items()}, indent=2, sort_keys=True) + "\n"
+        json.dumps(summaries, indent=2, sort_keys=True) + "\n"
     )
     print(f"wrote {root / 'EVAL.md'} and {artifacts / 'eval.json'}")
+
+    if args.check:
+        from quorum.eval import gates
+
+        print()
+        checked = gates.check(summaries, provider=args.provider)
+        for outcome in checked:
+            print(f"  {outcome.describe()}")
+        failed = gates.failures(checked)
+        if failed:
+            print(f"\n{len(failed)} gate(s) failed", file=sys.stderr)
+            return 1
     return 0
 
 
@@ -188,6 +206,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_eval.add_argument("--model", default="stub", help="model id for a live provider")
     p_eval.add_argument("--engines", nargs="*", help="subset of the grid to run")
     p_eval.add_argument("--only", nargs="*", help="subset of question groups to score")
+    p_eval.add_argument(
+        "--check",
+        action="store_true",
+        help="enforce the accuracy gates and exit non-zero if any fails",
+    )
     p_eval.set_defaults(func=_cmd_eval)
 
     return parser

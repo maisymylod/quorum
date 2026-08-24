@@ -27,6 +27,10 @@ demo: install ## run the welfare wording experiment end to end, from a clean clo
 eval: ## run the ablation grid over the question bank and regenerate EVAL.md
 	$(BIN)/quorum eval $(EVAL_ARGS)
 
+.PHONY: gates
+gates: ## run the backtest and enforce the accuracy gates
+	$(BIN)/quorum eval --check --engines uniform prior hybrid
+
 .PHONY: test
 test: ## run the test suite and the quality gates
 	$(BIN)/pytest --cov=quorum --cov-report=term-missing --cov-fail-under=85
