@@ -19,7 +19,8 @@ Under construction, built in milestones. What is in `main` today:
 - [x] `quorum new` / `quorum validate` and a declarative spec format
 - [x] Real ground truth vendored: national census marginals and a scored survey question bank
 - [x] Population synthesis: microdata resampling and raking, with fidelity enforced as a gate
-- [ ] World model: social graph and bounded-confidence peer influence
+- [x] World model: homophilous social graph and bounded-confidence peer influence
+- [x] Classical propagation and the baselines a real engine has to beat
 - [ ] Hybrid LLM + classical response prediction, with cost accounting
 - [ ] Poststratification, hierarchical Bayesian intervals, Monte Carlo
 - [ ] Evaluation harness: backtest, baselines, ablation grid, calibration

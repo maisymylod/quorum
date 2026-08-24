@@ -26,13 +26,16 @@ class PopulationSynthesizer(Protocol):
 
 @runtime_checkable
 class WorldModel(Protocol):
-    """World modeling: everything that happens to a population before it answers.
+    """World modeling: what happens between a population and the answers it gives.
 
-    Peer influence, exposure to a stimulus, a treatment assignment. Implementations
-    return a new population rather than mutating, so a run can branch across arms.
+    Peer influence over a social graph, exposure to a stimulus, anything that makes
+    one agent's answer depend on another's. Takes the population's own responses and
+    returns revised ones, and never mutates either, so a run can branch across arms.
     """
 
-    def apply(self, population: Population, context: Any, seed: int) -> Population: ...
+    def influence(
+        self, population: Population, responses: np.ndarray, seed: int
+    ) -> np.ndarray: ...
 
 
 @runtime_checkable

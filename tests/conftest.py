@@ -13,8 +13,10 @@ import pytest
 from quorum.core.population import Population
 from quorum.core.spec import SimulationSpec
 
-AGE_BANDS = ["18-34", "35-54", "55+"]
-EDUCATION = ["no_degree", "degree"]
+# Levels come from the real taxonomy so that fixtures exercise the same encoding
+# path as production data.
+AGE_BANDS = ["18-24", "35-44", "65+"]
+EDUCATION = ["high_school", "bachelors"]
 
 
 @pytest.fixture
@@ -22,7 +24,7 @@ def small_population() -> Population:
     rng = np.random.default_rng(7)
     # Weights correlate with age band on purpose, so a weighted marginal is
     # distinguishable from a raw count share.
-    band_weight = {"18-34": 1.0, "35-54": 2.0, "55+": 4.0}
+    band_weight = {"18-24": 1.0, "35-44": 2.0, "65+": 4.0}
     rows = []
     for i in range(120):
         age_band = AGE_BANDS[i % 3]
