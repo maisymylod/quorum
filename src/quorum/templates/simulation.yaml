@@ -35,7 +35,7 @@ predictor:
   kind: hybrid          # hybrid | llm | classical | prior | uniform
   archetypes: 300
   stratify_by: [age_band, education]
-  propagator: multinomial_logit
+  propagator: multinomial_logit   # multinomial_logit | cell_mean | mean
   trait_noise: 0.05
   provider:
     name: stub          # stub runs offline and free; anthropic makes real calls

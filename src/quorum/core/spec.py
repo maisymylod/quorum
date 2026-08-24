@@ -143,7 +143,7 @@ class PredictorSpec(_Base):
     kind: Literal["hybrid", "llm", "classical", "prior", "uniform"] = "hybrid"
     archetypes: int = Field(default=300, ge=1)
     stratify_by: list[str] = Field(default_factory=lambda: ["age_band", "education"])
-    propagator: Literal["multinomial_logit", "cell_mean", "nearest"] = "multinomial_logit"
+    propagator: Literal["multinomial_logit", "cell_mean", "mean"] = "multinomial_logit"
     provider: ProviderSpec = Field(default_factory=ProviderSpec)
     trait_noise: float = Field(
         default=0.05, ge=0.0, le=1.0,

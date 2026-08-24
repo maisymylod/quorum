@@ -93,6 +93,11 @@ class HybridPredictor:
         self.traits = tuple(traits)
         self.trait_noise = trait_noise
         self.diagnostics = HybridDiagnostics()
+        # The agents that were actually measured, kept so the estimator can build its
+        # interval from the sample rather than from the size of the synthetic
+        # population, which is a number the author chose.
+        self.last_sample: Population | None = None
+        self.last_responses: np.ndarray | None = None
 
     def predict(self, population: Population, scenario: Scenario, seed: int) -> np.ndarray:
         sample, _ = population.stratified_sample(
@@ -110,6 +115,7 @@ class HybridPredictor:
             )
         sample = sample.subset(usable)
         responses = responses[usable]
+        self.last_sample, self.last_responses = sample, responses
 
         propagator = build_propagator(self.propagator_kind, self.stratify_by, self.traits)
         propagator.fit(sample, responses)
@@ -143,6 +149,8 @@ class DirectLLMPredictor:
 
     def __init__(self, responder) -> None:
         self.responder = responder
+        self.last_sample: Population | None = None
+        self.last_responses: np.ndarray | None = None
 
     def predict(self, population: Population, scenario: Scenario, seed: int) -> np.ndarray:
         responses = self.responder.respond(population, scenario, seed)
@@ -155,4 +163,5 @@ class DirectLLMPredictor:
             # dropped, which would silently reweight the population.
             fallback = responses[usable].mean(axis=0)
             responses[~usable] = fallback
+        self.last_sample, self.last_responses = population, responses
         return responses
