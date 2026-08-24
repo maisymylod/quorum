@@ -23,3 +23,30 @@ jobs:
         run: pip install -e ".[dev]"
       - name: Tests + coverage gate
         run: pytest --cov=quorum --cov-report=term-missing --cov-fail-under=85
+
+  accuracy:
+    name: Accuracy gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Demo runs from a clean clone
+        run: quorum run specs/welfare.yaml
+      - name: Backtest and enforce the gates
+        # Gates about prediction are reported as skipped while the offline stub is
+        # answering; gates about the pipeline are enforced on every run. See
+        # src/quorum/eval/gates.py.
+        run: quorum eval --check --engines uniform prior hybrid
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accuracy-report
+          path: |
+            EVAL.md
+            artifacts/
